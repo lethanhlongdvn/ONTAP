@@ -133,7 +133,7 @@
 <body>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
 
     <script>
         const firebaseConfig = { databaseURL: "https://gamhoctap-default-rtdb.asia-southeast1.firebasedatabase.app" };
@@ -188,108 +188,7 @@
             </a>
         </div>
 
-        <div class="teacher-panel"
-            style="margin-top: 40px; text-align: center; padding: 20px; background: #fff; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
-            <h3>Khu vực Giáo Viên</h3>
-            <button onclick="downloadExcel()"
-                style="padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
-                📊 Tải Bảng Điểm (Excel)
-            </button>
-        </div>
 
-        <script>
-            function downloadExcel() {
-                const btn = document.querySelector('button[onclick="downloadExcel()"]');
-                btn.innerText = "⏳ Đang tải dữ liệu...";
-                btn.disabled = true;
-
-                db.ref('scores').once('value').then(snapshot => {
-                    const data = snapshot.val();
-                    if (!data) {
-                        alert("Chưa có dữ liệu điểm nào!");
-                        btn.innerText = "📊 Tải Bảng Điểm (Excel)";
-                        btn.disabled = false;
-                        return;
-                    }
-
-                    const rows = [];
-                    let serialNumber = 1;
-
-                    // Iterate through each lesson
-                    for (const [lessonName, entries] of Object.entries(data)) {
-                        // entries is an object with pushKeys as keys
-                        const studentEntries = [];
-
-                        // Convert to array and sort by date to calculate attempt number
-                        Object.values(entries).forEach(entry => {
-                            studentEntries.push(entry);
-                        });
-
-                        // Sort by student name, then by date to determine attempt count
-                        studentEntries.sort((a, b) => {
-                            if (a.fullName === b.fullName) {
-                                return new Date(a.date) - new Date(b.date);
-                            }
-                            return a.fullName.localeCompare(b.fullName);
-                        });
-
-                        // Map to track attempt count for each student in this lesson
-                        const attemptMap = {};
-
-                        studentEntries.forEach(entry => {
-                            const studentKey = entry.fullName + "_" + entry.className;
-                            if (!attemptMap[studentKey]) {
-                                attemptMap[studentKey] = 0;
-                            }
-                            attemptMap[studentKey]++;
-
-                            rows.push({
-                                "TT": serialNumber++,
-                                "Bài tên": lessonName,
-                                "Tên": entry.fullName,
-                                "Lớp": entry.className,
-                                "Điểm": entry.score,
-                                "lần làm": attemptMap[studentKey]
-                            });
-                        });
-                    }
-
-                    if (rows.length === 0) {
-                        alert("Không tìm thấy dữ liệu hợp lệ.");
-                        btn.innerText = "📊 Tải Bảng Điểm (Excel)";
-                        btn.disabled = false;
-                        return;
-                    }
-
-                    const worksheet = XLSX.utils.json_to_sheet(rows);
-                    const workbook = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(workbook, worksheet, "BangDiem");
-
-                    // Auto-width
-                    const max_width = rows.reduce((w, r) => Math.max(w, (r["Tên"] || "").length), 10);
-                    const lesson_width = rows.reduce((w, r) => Math.max(w, (r["Bài tên"] || "").length), 15);
-
-                    worksheet['!cols'] = [
-                        { wch: 5 },  // TT
-                        { wch: lesson_width + 5 }, // Bài tên
-                        { wch: max_width + 5 }, // Tên
-                        { wch: 10 }, // Lớp
-                        { wch: 10 }, // Điểm
-                        { wch: 10 }  // lần làm
-                    ];
-
-                    XLSX.writeFile(workbook, "BangDiem_EduRobot.xlsx");
-
-                    btn.innerText = "📊 Tải Bảng Điểm (Excel)";
-                    btn.disabled = false;
-                }).catch(error => {
-                    console.error(error);
-                    alert("Lỗi khi tải dữ liệu: " + error.message);
-                    btn.innerText = "📊 Tải Bảng Điểm (Excel)";
-                    btn.disabled = false;
-                });
-            }
-        </script>
 
         <div class="footer">
             &copy; 2024 EduRobot - Hệ thống học tập thông minh
