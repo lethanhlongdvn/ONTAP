@@ -216,7 +216,8 @@
         function checkAll() {
             let count = 0;
             quizData.forEach((_, i) => { if (checkSingle(i)) count++; });
-            document.getElementById('final-score').innerText = `Kết quả: ${count}/${quizData.length} câu đúng!`;
+            const finalScore = count * 5;
+            document.getElementById('final-score').innerText = `Kết quả: ${finalScore}/100 điểm`;
             if (count === quizData.length) {
                 let end = Date.now() + 3000;
                 (function frame() {
@@ -225,7 +226,7 @@
                     if (Date.now() < end) requestAnimationFrame(frame);
                 }());
             }
-            saveScore(count);
+            saveScore(finalScore);
         }
 
         function saveScore(score) {
