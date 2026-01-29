@@ -226,18 +226,17 @@
         function checkAll() {
             let count = 0;
             quizData.forEach((_, i) => { if (checkSingle(i)) count++; });
-            document.getElementById('final-score').innerText = `Kết quả cuối cùng: ${count}/${quizData.length} câu đúng!`;
-
+            const finalScore = count * 5;
+            document.getElementById('final-score').innerText = `Kết quả: ${finalScore}/100 điểm`;
             if (count === quizData.length) {
-                // Hiệu ứng pháo hoa kéo dài 3 giây nếu đúng hết
                 let end = Date.now() + 3000;
                 (function frame() {
-                    confetti({ particleCount: 30, angle: 60, spread: 80, origin: { x: 0 }, colors: ['#ff0000', '#ffd700'] });
-                    confetti({ particleCount: 30, angle: 120, spread: 80, origin: { x: 1 }, colors: ['#0000ff', '#ffffff'] });
+                    confetti({ particleCount: 30, angle: 60, spread: 80, origin: { x: 0 } });
+                    confetti({ particleCount: 30, angle: 120, spread: 80, origin: { x: 1 } });
                     if (Date.now() < end) requestAnimationFrame(frame);
                 }());
             }
-            saveScore(count);
+            saveScore(finalScore);
         }
 
         function saveScore(score) {
