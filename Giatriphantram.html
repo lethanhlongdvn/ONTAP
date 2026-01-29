@@ -230,6 +230,31 @@
                     if (Date.now() < end) requestAnimationFrame(frame);
                 }());
             }
+            saveScore(count);
+        }
+
+        function saveScore(score) {
+            const fullName = localStorage.getItem('studentName') || "Chưa nhập tên";
+            const className = localStorage.getItem('studentClass') || "Chưa nhập lớp";
+            const duration = Math.floor((Date.now() - startTime) / 1000); // seconds
+
+            const data = {
+                fullName: fullName,
+                className: className,
+                score: score,
+                total: quizData.length,
+                duration: duration,
+                date: new Date().toISOString()
+            };
+
+            db.ref('scores/Giatriphantram').push(data)
+                .then(() => {
+                    console.log("Lưu điểm thành công!");
+                    // alert("Đã lưu điểm thành công lên hệ thống!"); // Optional: Notify user
+                })
+                .catch((error) => {
+                    console.error("Lỗi khi lưu điểm:", error);
+                });
         }
     </script>
 </body>
