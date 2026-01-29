@@ -213,18 +213,44 @@
                     }
 
                     const rows = [];
-                    // Flatten: scores/{LessonName}/{EntryId} -> Row
+                    let serialNumber = 1;
+
+                    // Iterate through each lesson
                     for (const [lessonName, entries] of Object.entries(data)) {
-                        for (const [id, entry] of Object.entries(entries)) {
+                        // entries is an object with pushKeys as keys
+                        const studentEntries = [];
+
+                        // Convert to array and sort by date to calculate attempt number
+                        Object.values(entries).forEach(entry => {
+                            studentEntries.push(entry);
+                        });
+                        
+                        // Sort by student name, then by date to determine attempt count
+                        studentEntries.sort((a, b) => {
+                            if (a.fullName === b.fullName) {
+                                return new Date(a.date) - new Date(b.date);
+                            }
+                            return a.fullName.localeCompare(b.fullName);
+                        });
+
+                        // Map to track attempt count for each student in this lesson
+                        const attemptMap = {};
+
+                        studentEntries.forEach(entry => {
+                            const studentKey = entry.fullName + "_" + entry.className;
+                            if (!attemptMap[studentKey]) {
+                                attemptMap[studentKey] = 0;
+                            }
+                            attemptMap[studentKey]++;
+
                             rows.push({
-                                "Bài Học": lessonName,
-                                "Họ và Tên": entry.fullName,
+                                "TT": serialNumber++,
+                                "Tên": entry.fullName,
                                 "Lớp": entry.className,
                                 "Điểm": entry.score,
-                                "Thời gian làm bài (giây)": entry.duration || 0,
-                                "Ngày nộp": entry.date || ""
+                                "lần làm": attemptMap[studentKey]
                             });
-                        }
+                        });
                     }
 
                     if (rows.length === 0) {
@@ -239,8 +265,14 @@
                     XLSX.utils.book_append_sheet(workbook, worksheet, "BangDiem");
 
                     // Auto-width
-                    const max_width = rows.reduce((w, r) => Math.max(w, (r["Họ và Tên"] || "").length), 10);
-                    worksheet['!cols'] = [{ wch: 20 }, { wch: max_width + 5 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 20 }];
+                    const max_width = rows.reduce((w, r) => Math.max(w, (r["Tên"] || "").length), 10);
+                    worksheet['!cols'] = [
+                        { wch: 5 },  // TT
+                        { wch: max_width + 5 }, // Tên
+                        { wch: 10 }, // Lớp
+                        { wch: 10 }, // Điểm
+                        { wch: 10 }  // lần làm
+                    ];
 
                     XLSX.writeFile(workbook, "BangDiem_EduRobot.xlsx");
 
