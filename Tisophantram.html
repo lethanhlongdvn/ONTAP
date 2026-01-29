@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tỉ số phần trăm a/b - EduRobot</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
@@ -137,6 +138,8 @@
 
         <div id="summary-section">
             <button class="btn-finish" onclick="checkAll()">Nộp tất cả bài làm</button>
+            <button class="btn-finish" style="background: #3498db; margin-left: 10px;"
+                onclick="downloadLessonScore()">Tải Bảng Điểm Bài Này</button>
             <div id="final-score" style="margin-top: 20px; font-size: 24px; font-weight: bold;"></div>
         </div>
     </div>
@@ -250,6 +253,69 @@
                 .catch((error) => {
                     console.error("Lỗi khi lưu điểm:", error);
                 });
+        }
+
+        function downloadLessonScore() {
+            const btn = document.querySelector('button[onclick="downloadLessonScore()"]');
+            btn.innerText = "⏳ Đang tải...";
+            btn.disabled = true;
+
+            const db = firebase.database();
+            db.ref('scores/Tisophantram').once('value').then(snapshot => {
+                const data = snapshot.val();
+                if (!data) {
+                    alert("Chưa có dữ liệu điểm nào cho bài này!");
+                    btn.innerText = "Tải Bảng Điểm Bài Này";
+                    btn.disabled = false;
+                    return;
+                }
+
+                const rows = [];
+                let serialNumber = 1;
+                const entries = Object.values(data);
+
+                entries.sort((a, b) => {
+                    if (a.fullName === b.fullName) {
+                        return new Date(a.date) - new Date(b.date);
+                    }
+                    return a.fullName.localeCompare(b.fullName);
+                });
+
+                const attemptMap = {};
+
+                entries.forEach(entry => {
+                    const studentKey = entry.fullName + "_" + entry.className;
+                    if (!attemptMap[studentKey]) attemptMap[studentKey] = 0;
+                    attemptMap[studentKey]++;
+
+                    rows.push({
+                        "TT": serialNumber++,
+                        "Tên": entry.fullName,
+                        "Lớp": entry.className,
+                        "Điểm": entry.score,
+                        "lần làm": attemptMap[studentKey]
+                    });
+                });
+
+                const worksheet = XLSX.utils.json_to_sheet(rows);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Diem_Tisophantram");
+
+                const max_width = rows.reduce((w, r) => Math.max(w, (r["Tên"] || "").length), 10);
+                worksheet['!cols'] = [
+                    { wch: 5 }, { wch: max_width + 5 }, { wch: 10 }, { wch: 10 }, { wch: 10 }
+                ];
+
+                XLSX.writeFile(workbook, "Diem_Tisophantram.xlsx");
+
+                btn.innerText = "Tải Bảng Điểm Bài Này";
+                btn.disabled = false;
+            }).catch(error => {
+                console.error(error);
+                alert("Lỗi: " + error.message);
+                btn.innerText = "Tải Bảng Điểm Bài Này";
+                btn.disabled = false;
+            });
         }
     </script>
 </body>
