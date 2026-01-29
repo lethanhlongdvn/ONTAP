@@ -137,12 +137,16 @@
 
         <div id="summary-section">
             <button class="btn-finish" onclick="checkAll()">Nộp tất cả bài làm</button>
+            <button class="btn-finish" style="background: #3498db; margin-left: 10px;"
+                onclick="downloadLessonScore()">Tải Bảng Điểm Bài Này</button>
             <div id="final-score" style="margin-top: 20px; font-size: 24px; font-weight: bold;"></div>
         </div>
     </div>
 
     <audio id="sound-correct" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"></audio>
     <audio id="sound-wrong" src="https://assets.mixkit.co/active_storage/sfx/253/253-preview.mp3"></audio>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
 
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
@@ -255,6 +259,72 @@
                 .catch((error) => {
                     console.error("Lỗi khi lưu điểm:", error);
                 });
+        }
+
+        function downloadLessonScore() {
+            const btn = document.querySelector('button[onclick="downloadLessonScore()"]');
+            btn.innerText = "⏳ Đang tải...";
+            btn.disabled = true;
+
+            db.ref('scores/Giatriphantram').once('value').then(snapshot => {
+                const data = snapshot.val();
+                if (!data) {
+                    alert("Chưa có dữ liệu điểm nào cho bài này!");
+                    btn.innerText = "Tải Bảng Điểm Bài Này";
+                    btn.disabled = false;
+                    return;
+                }
+
+                const rows = [];
+                let serialNumber = 1;
+
+                // data is object { pushKey: { ...entry } }
+                const entries = Object.values(data);
+
+                // Sort by name then date
+                entries.sort((a, b) => {
+                    if (a.fullName === b.fullName) {
+                        return new Date(a.date) - new Date(b.date);
+                    }
+                    return a.fullName.localeCompare(b.fullName);
+                });
+
+                const attemptMap = {};
+
+                entries.forEach(entry => {
+                    const studentKey = entry.fullName + "_" + entry.className;
+                    if (!attemptMap[studentKey]) requestAnimationFrame = 0; // Fix potential reference error if copy paste
+                    if (!attemptMap[studentKey]) attemptMap[studentKey] = 0;
+                    attemptMap[studentKey]++;
+
+                    rows.push({
+                        "TT": serialNumber++,
+                        "Tên": entry.fullName,
+                        "Lớp": entry.className,
+                        "Điểm": entry.score,
+                        "lần làm": attemptMap[studentKey]
+                    });
+                });
+
+                const worksheet = XLSX.utils.json_to_sheet(rows);
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Diem_Giatriphantram");
+
+                const max_width = rows.reduce((w, r) => Math.max(w, (r["Tên"] || "").length), 10);
+                worksheet['!cols'] = [
+                    { wch: 5 }, { wch: max_width + 5 }, { wch: 10 }, { wch: 10 }, { wch: 10 }
+                ];
+
+                XLSX.writeFile(workbook, "Diem_Giatriphantram.xlsx");
+
+                btn.innerText = "Tải Bảng Điểm Bài Này";
+                btn.disabled = false;
+            }).catch(error => {
+                console.error(error);
+                alert("Lỗi: " + error.message);
+                btn.innerText = "Tải Bảng Điểm Bài Này";
+                btn.disabled = false;
+            });
         }
     </script>
 </body>
