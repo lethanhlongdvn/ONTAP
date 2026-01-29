@@ -167,6 +167,9 @@
             { p: 2.5, total: 200, ans: 5 }, { p: 70, total: 30, ans: 21 }
         ];
 
+        // Randomize question order
+        quizData.sort(() => Math.random() - 0.5);
+
         const container = document.getElementById('quiz-container');
 
         quizData.forEach((item, index) => {
