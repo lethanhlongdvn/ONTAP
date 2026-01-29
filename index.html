@@ -224,7 +224,7 @@
                         Object.values(entries).forEach(entry => {
                             studentEntries.push(entry);
                         });
-                        
+
                         // Sort by student name, then by date to determine attempt count
                         studentEntries.sort((a, b) => {
                             if (a.fullName === b.fullName) {
@@ -245,6 +245,7 @@
 
                             rows.push({
                                 "TT": serialNumber++,
+                                "Bài tên": lessonName,
                                 "Tên": entry.fullName,
                                 "Lớp": entry.className,
                                 "Điểm": entry.score,
@@ -266,8 +267,11 @@
 
                     // Auto-width
                     const max_width = rows.reduce((w, r) => Math.max(w, (r["Tên"] || "").length), 10);
+                    const lesson_width = rows.reduce((w, r) => Math.max(w, (r["Bài tên"] || "").length), 15);
+
                     worksheet['!cols'] = [
                         { wch: 5 },  // TT
+                        { wch: lesson_width + 5 }, // Bài tên
                         { wch: max_width + 5 }, // Tên
                         { wch: 10 }, // Lớp
                         { wch: 10 }, // Điểm
