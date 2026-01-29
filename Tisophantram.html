@@ -148,6 +148,10 @@
     <audio id="sound-wrong" src="https://assets.mixkit.co/active_storage/sfx/253/253-preview.mp3"></audio>
 
     <script>
+        // Firebase Config
+        const firebaseConfig = { databaseURL: "https://gamhoctap-default-rtdb.asia-southeast1.firebasedatabase.app" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+
         const quizData = [
             { a: 13, b: 25, ans: 52.0 }, { a: 7, b: 40, ans: 17.5 }, { a: 9, b: 15, ans: 60.0 },
             { a: 12, b: 16, ans: 75.0 }, { a: 1, b: 8, ans: 12.5 }, { a: 3, b: 5, ans: 60.0 },
@@ -230,11 +234,6 @@
         }
 
         function saveScore(score) {
-            // Initialize Firebase if not already done (it is done in index.html but this page might be loaded directly, wait no this page doesn't have firebase init code yet! Adding it.)
-            if (!firebase.apps.length) {
-                const firebaseConfig = { databaseURL: "https://gamhoctap-default-rtdb.asia-southeast1.firebasedatabase.app" };
-                firebase.initializeApp(firebaseConfig);
-            }
             const db = firebase.database();
 
             const fullName = localStorage.getItem('studentName') || "Chưa nhập tên";
