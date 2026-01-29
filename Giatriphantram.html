@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tìm giá trị của một số - EduRobot</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <style>
+        :root {
+            --primary: #9b59b6;
+            --success: #27ae60;
+            --error: #e74c3c;
+            --bg: #fdfafb;
+        }
+
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg);
+            padding: 20px;
+            color: #2c3e50;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            border: 2px solid #f1f1f1;
+        }
+
+        h1 {
+            text-align: center;
+            color: #8e44ad;
+            margin-bottom: 10px;
+        }
+
+        .desc {
+            text-align: center;
+            margin-bottom: 30px;
+            font-style: italic;
+            color: #7f8c8d;
+        }
+
+        .quiz-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+        }
+
+        .question-item {
+            border: 2px solid #f3f4f6;
+            padding: 20px;
+            border-radius: 12px;
+            background: #fff;
+            transition: 0.3s;
+        }
+
+        .question-item:hover {
+            border-color: var(--primary);
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            gap: 8px;
+        }
+
+        input[type="text"] {
+            width: 90px;
+            padding: 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            outline: none;
+        }
+
+        .check-btn {
+            padding: 10px 15px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .status-icon {
+            font-size: 28px;
+            min-width: 35px;
+            text-align: center;
+        }
+
+        .correct-bg {
+            background-color: #eafaf1 !important;
+            border-color: var(--success) !important;
+        }
+
+        .wrong-bg {
+            background-color: #fdf2f2 !important;
+            border-color: var(--error) !important;
+        }
+
+        #summary-section {
+            margin-top: 40px;
+            text-align: center;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        .btn-finish {
+            background: var(--success);
+            padding: 15px 40px;
+            font-size: 20px;
+            border-radius: 50px;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>BÀI TẬP: TÌM GIÁ TRỊ CỦA MỘT SỐ</h1>
+        <p class="desc">Tính giá trị phần trăm của các số dưới đây. Chấp nhận các dạng viết như 10 hoặc 10,0.</p>
+
+        <div id="quiz-container" class="quiz-grid"></div>
+
+        <div id="summary-section">
+            <button class="btn-finish" onclick="checkAll()">Nộp tất cả bài làm</button>
+            <div id="final-score" style="margin-top: 20px; font-size: 24px; font-weight: bold;"></div>
+        </div>
+    </div>
+
+    <audio id="sound-correct" src="https://assets.mixkit.co/active_storage/sfx/2013/2013-preview.mp3"></audio>
+    <audio id="sound-wrong" src="https://assets.mixkit.co/active_storage/sfx/253/253-preview.mp3"></audio>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script>
+        // Firebase Config
+        const firebaseConfig = { databaseURL: "https://gamhoctap-default-rtdb.asia-southeast1.firebasedatabase.app" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let startTime = Date.now();
+        const quizData = [
+            { p: 15, total: 80, ans: 12 }, { p: 20, total: 150, ans: 30 }, { p: 25, total: 40, ans: 10 },
+            { p: 10, total: 95, ans: 9.5 }, { p: 5, total: 120, ans: 6 }, { p: 30, total: 60, ans: 18 },
+            { p: 12, total: 50, ans: 6 }, { p: 75, total: 200, ans: 150 }, { p: 40, total: 25, ans: 10 },
+            { p: 8, total: 125, ans: 10 }, { p: 35, total: 200, ans: 70 }, { p: 0.5, total: 400, ans: 2 },
+            { p: 12.5, total: 80, ans: 10 }, { p: 60, total: 45, ans: 27 }, { p: 18, total: 150, ans: 27 },
+            { p: 2, total: 500, ans: 10 }, { p: 45, total: 80, ans: 36 }, { p: 150, total: 60, ans: 90 },
+            { p: 2.5, total: 200, ans: 5 }, { p: 70, total: 30, ans: 21 }
+        ];
+
+        const container = document.getElementById('quiz-container');
+
+        quizData.forEach((item, index) => {
+            const div = document.createElement('div');
+            div.className = 'question-item';
+            div.id = `q-item-${index}`;
+            div.innerHTML = `
+            <div><b>Câu ${index + 1}:</b> Tìm <b>${item.p}%</b> của <b>${item.total}</b></div>
+            <div class="input-group">
+                <input type="text" id="input-${index}" placeholder="..." autocomplete="off">
+                <button class="check-btn" onclick="checkSingle(${index})">Kiểm tra</button>
+                <span id="icon-${index}" class="status-icon"></span>
+            </div>
+        `;
+            container.appendChild(div);
+        });
+
+        function checkSingle(index) {
+            let userVal = document.getElementById(`input-${index}`).value.trim().replace(',', '.');
+            let userNum = parseFloat(userVal);
+            const correctVal = quizData[index].ans;
+            const itemDiv = document.getElementById(`q-item-${index}`);
+            const iconSpan = document.getElementById(`icon-${index}`);
+
+            if (!isNaN(userNum) && Math.abs(userNum - correctVal) < 0.01) {
+                itemDiv.classList.replace('wrong-bg', 'correct-bg') || itemDiv.classList.add('correct-bg');
+                iconSpan.innerHTML = '✅';
+                playSuperSuccess();
+                return true;
+            } else {
+                itemDiv.classList.replace('correct-bg', 'wrong-bg') || itemDiv.classList.add('wrong-bg');
+                iconSpan.innerHTML = '😟';
+                document.getElementById('sound-wrong').play();
+                return false;
+            }
+        }
+
+        function playSuperSuccess() {
+            // Phát âm thanh vỗ tay
+            const snd = document.getElementById('sound-correct');
+            snd.currentTime = 0;
+            snd.play();
+
+            // Pháo giấy mật độ cao (500 hạt)
+            confetti({
+                particleCount: 500,
+                spread: 120,
+                origin: { y: 0.6 },
+                scalar: 1.2,
+                colors: ['#8e44ad', '#2ecc71', '#3498db', '#f1c40f', '#ff69b4']
+            });
+        }
+
+        function checkAll() {
+            let count = 0;
+            quizData.forEach((_, i) => { if (checkSingle(i)) count++; });
+            document.getElementById('final-score').innerText = `Kết quả cuối cùng: ${count}/${quizData.length} câu đúng!`;
+
+            if (count === quizData.length) {
+                // Hiệu ứng pháo hoa kéo dài 3 giây nếu đúng hết
+                let end = Date.now() + 3000;
+                (function frame() {
+                    confetti({ particleCount: 30, angle: 60, spread: 80, origin: { x: 0 }, colors: ['#ff0000', '#ffd700'] });
+                    confetti({ particleCount: 30, angle: 120, spread: 80, origin: { x: 1 }, colors: ['#0000ff', '#ffffff'] });
+                    if (Date.now() < end) requestAnimationFrame(frame);
+                }());
+            }
+        }
+    </script>
+</body>
+
+</html>

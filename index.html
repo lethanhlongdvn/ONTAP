@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Bài tập Toán - EduRobot</title>
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            --text-color: #2d3436;
+            --bg-color: #f0f2f5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .main-menu {
+            text-align: center;
+            background: white;
+            padding: 50px;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 90%;
+        }
+
+        h1 {
+            color: #4834d4;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            color: #636e72;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+        }
+
+        .grid-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            text-decoration: none;
+            padding: 30px;
+            border-radius: 20px;
+            color: white;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-1 {
+            background: var(--primary-gradient);
+        }
+
+        .card-2 {
+            background: var(--secondary-gradient);
+        }
+
+        .card i {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .card h2 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .card p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+
+        .footer {
+            margin-top: 40px;
+            font-size: 0.8rem;
+            color: #b2bec3;
+        }
+
+        .user-info-form {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .form-group input {
+            padding: 15px 25px;
+            border-radius: 50px;
+            border: 2px solid #e0e0e0;
+            font-size: 1rem;
+            width: 250px;
+            transition: all 0.3s ease;
+            outline: none;
+            background: #f9f9f9;
+        }
+
+        .form-group input:focus {
+            border-color: #6c5ce7;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+            background: white;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+
+    <script>
+        const firebaseConfig = { databaseURL: "https://gamhoctap-default-rtdb.asia-southeast1.firebasedatabase.app" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+    </script>
+
+    <div class="main-menu">
+        <h1>HỌC TOÁN CÙNG EDUROBOT</h1>
+        <p class="subtitle">Vui lòng chọn chủ đề bài tập bạn muốn luyện tập hôm nay</p>
+
+        <div class="user-info-form">
+            <div class="form-group">
+                <input type="text" id="studentName" placeholder="Nhập họ và tên của bạn" required>
+            </div>
+            <div class="form-group">
+                <input type="text" id="studentClass" placeholder="Nhập lớp" required>
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const nameInput = document.getElementById('studentName');
+                const classInput = document.getElementById('studentClass');
+
+                // Load saved data if available
+                if (localStorage.getItem('studentName')) nameInput.value = localStorage.getItem('studentName');
+                if (localStorage.getItem('studentClass')) classInput.value = localStorage.getItem('studentClass');
+
+                // Save data on change
+                const saveData = () => {
+                    localStorage.setItem('studentName', nameInput.value);
+                    localStorage.setItem('studentClass', classInput.value);
+                };
+
+                nameInput.addEventListener('input', saveData);
+                classInput.addEventListener('input', saveData);
+            });
+        </script>
+
+        <div class="grid-links">
+            <a href="Giatriphantram.html" class="card card-1">
+                <h2>Chủ đề 2</h2>
+                <p>Tìm giá trị của một số</p>
+                <strong>Bắt đầu học →</strong>
+            </a>
+
+            <a href="Tisophantram.html" class="card card-2">
+                <h2>Chủ đề 1</h2>
+                <p>Tìm tỉ số phần trăm a/b</p>
+                <strong>Bắt đầu học →</strong>
+            </a>
+        </div>
+
+        <div class="teacher-panel"
+            style="margin-top: 40px; text-align: center; padding: 20px; background: #fff; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+            <h3>Khu vực Giáo Viên</h3>
+            <button onclick="downloadExcel()"
+                style="padding: 10px 20px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+                📊 Tải Bảng Điểm (Excel)
+            </button>
+        </div>
+
+        <script>
+            function downloadExcel() {
+                const btn = document.querySelector('button[onclick="downloadExcel()"]');
+                btn.innerText = "⏳ Đang tải dữ liệu...";
+                btn.disabled = true;
+
+                db.ref('scores').once('value').then(snapshot => {
+                    const data = snapshot.val();
+                    if (!data) {
+                        alert("Chưa có dữ liệu điểm nào!");
+                        btn.innerText = "📊 Tải Bảng Điểm (Excel)";
+                        btn.disabled = false;
+                        return;
+                    }
+
+                    const rows = [];
+                    // Flatten: scores/{LessonName}/{EntryId} -> Row
+                    for (const [lessonName, entries] of Object.entries(data)) {
+                        for (const [id, entry] of Object.entries(entries)) {
+                            rows.push({
+                                "Bài Học": lessonName,
+                                "Họ và Tên": entry.fullName,
+                                "Lớp": entry.className,
+                                "Điểm": entry.score,
+                                "Thời gian làm bài (giây)": entry.duration || 0,
+                                "Ngày nộp": entry.date || ""
+                            });
+                        }
+                    }
+
+                    if (rows.length === 0) {
+                        alert("Không tìm thấy dữ liệu hợp lệ.");
+                        btn.innerText = "📊 Tải Bảng Điểm (Excel)";
+                        btn.disabled = false;
+                        return;
+                    }
+
+                    const worksheet = XLSX.utils.json_to_sheet(rows);
+                    const workbook = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(workbook, worksheet, "BangDiem");
+
+                    // Auto-width
+                    const max_width = rows.reduce((w, r) => Math.max(w, (r["Họ và Tên"] || "").length), 10);
+                    worksheet['!cols'] = [{ wch: 20 }, { wch: max_width + 5 }, { wch: 10 }, { wch: 10 }, { wch: 15 }, { wch: 20 }];
+
+                    XLSX.writeFile(workbook, "BangDiem_EduRobot.xlsx");
+
+                    btn.innerText = "📊 Tải Bảng Điểm (Excel)";
+                    btn.disabled = false;
+                }).catch(error => {
+                    console.error(error);
+                    alert("Lỗi khi tải dữ liệu: " + error.message);
+                    btn.innerText = "📊 Tải Bảng Điểm (Excel)";
+                    btn.disabled = false;
+                });
+            }
+        </script>
+
+        <div class="footer">
+            &copy; 2024 EduRobot - Hệ thống học tập thông minh
+        </div>
+    </div>
+
+</body>
+
+</html>
