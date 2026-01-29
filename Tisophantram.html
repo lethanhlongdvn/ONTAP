@@ -158,6 +158,9 @@
             { a: 8, b: 12, ans: 66.7 }, { a: 25, b: 32, ans: 78.1 }
         ];
 
+        // Randomize
+        quizData.sort(() => Math.random() - 0.5);
+
         const container = document.getElementById('quiz-container');
 
         quizData.forEach((item, index) => {
