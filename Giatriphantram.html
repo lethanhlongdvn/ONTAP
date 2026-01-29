@@ -265,6 +265,10 @@
         }
 
         function downloadLessonScore() {
+            if (typeof XLSX === 'undefined') {
+                alert("Lỗi: Thư viện xuất Excel chưa tải xong. Vui lòng kiểm tra kết nối mạng và thử lại sau giây lát.");
+                return;
+            }
             const btn = document.querySelector('button[onclick="downloadLessonScore()"]');
             btn.innerText = "⏳ Đang tải...";
             btn.disabled = true;
@@ -296,8 +300,9 @@
 
                 entries.forEach(entry => {
                     const studentKey = entry.fullName + "_" + entry.className;
-                    if (!attemptMap[studentKey]) requestAnimationFrame = 0; // Fix potential reference error if copy paste
-                    if (!attemptMap[studentKey]) attemptMap[studentKey] = 0;
+                    if (!attemptMap[studentKey]) {
+                        attemptMap[studentKey] = 0;
+                    }
                     attemptMap[studentKey]++;
 
                     rows.push({
