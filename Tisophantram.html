@@ -277,30 +277,40 @@
                     return;
                 }
 
-                const rows = [];
-                let serialNumber = 1;
-                const entries = Object.values(data);
+                // Filter best scores
+                const bestEntries = {}; // Key: "FullName_Class", Value: Entry
 
-                entries.sort((a, b) => {
-                    if (a.fullName === b.fullName) {
-                        return new Date(a.date) - new Date(b.date);
+                Object.values(data).forEach(entry => {
+                    const key = entry.fullName.trim() + "_" + entry.className.trim();
+                    if (!bestEntries[key]) {
+                        bestEntries[key] = entry;
+                    } else {
+                        // Logic: Higher score is better. If score equal, later date is better.
+                        const current = bestEntries[key];
+                        if (entry.score > current.score) {
+                            bestEntries[key] = entry;
+                        } else if (entry.score === current.score) {
+                            if (new Date(entry.date) > new Date(current.date)) {
+                                bestEntries[key] = entry;
+                            }
+                        }
                     }
-                    return a.fullName.localeCompare(b.fullName);
                 });
 
-                const attemptMap = {};
+                const rows = [];
+                let serialNumber = 1;
+                const sortedEntries = Object.values(bestEntries);
 
-                entries.forEach(entry => {
-                    const studentKey = entry.fullName + "_" + entry.className;
-                    if (!attemptMap[studentKey]) attemptMap[studentKey] = 0;
-                    attemptMap[studentKey]++;
+                // Sort by name
+                sortedEntries.sort((a, b) => a.fullName.localeCompare(b.fullName));
 
+                sortedEntries.forEach(entry => {
                     rows.push({
                         "TT": serialNumber++,
                         "Tên": entry.fullName,
                         "Lớp": entry.className,
                         "Điểm": entry.score,
-                        "lần làm": attemptMap[studentKey]
+                        "Ngày nộp": new Date(entry.date).toLocaleString('vi-VN')
                     });
                 });
 
@@ -310,7 +320,7 @@
 
                 const max_width = rows.reduce((w, r) => Math.max(w, (r["Tên"] || "").length), 10);
                 worksheet['!cols'] = [
-                    { wch: 5 }, { wch: max_width + 5 }, { wch: 10 }, { wch: 10 }, { wch: 10 }
+                    { wch: 5 }, { wch: max_width + 5 }, { wch: 10 }, { wch: 10 }, { wch: 20 }
                 ];
 
                 XLSX.writeFile(workbook, "Diem_Tisophantram.xlsx");
